@@ -1,6 +1,6 @@
 mod macos;
 mod windowDescriptor;
-use windowDescriptor::WindowDescriptor;
+pub use windowDescriptor::WindowDescriptor;
 use crate::ui::{ContentView,View};
 
 pub struct Window{
