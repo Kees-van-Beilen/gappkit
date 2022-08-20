@@ -11,11 +11,11 @@ impl Image {
         unsafe{
             use cocoa::base::{nil, id};
             use cocoa::foundation::{NSData};
-            let imageHandle:id = cocoa::appkit::NSImage::alloc(nil).initWithContentsOfFile_( cocoa::foundation::NSString::alloc(nil).init_str(path));
+            let image_handle:id = cocoa::appkit::NSImage::alloc(nil).initWithContentsOfFile_( cocoa::foundation::NSString::alloc(nil).init_str(path));
             return Self { 
-                valid: imageHandle != nil, 
+                valid: image_handle != nil, 
                 file: path.to_string(), 
-                macos_image_handle: imageHandle
+                macos_image_handle: image_handle
             };
         }
     }
