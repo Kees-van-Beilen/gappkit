@@ -12,22 +12,50 @@ pub struct App{
     pub config:AppConfig,
     pub state:AppState
 }
+
+static mut EventQueue:Vec<(String,fn(&App))> = vec![];
+static mut LifeTimeApp:*mut App = std::ptr::null_mut();
+
+use objc::runtime::Object;
+use objc::runtime::Sel;
+use cocoa::base::id;
+
+extern fn macos_app_did_finish_launching(this: &Object, _cmd: Sel, _notification: id) {
+    unsafe{
+        for (event,then) in EventQueue.iter() {
+            if event == "onLaunch" {
+                then(&*LifeTimeApp);
+            }
+        }
+    }
+}
+
 impl App {
 
-    pub fn new<ConfigType>(config:ConfigType)->App where ConfigType: Into<AppConfig>{
-        return App {
+    pub fn new<ConfigType>(config:ConfigType)->&'static App where ConfigType: Into<AppConfig>{
+        let app =  App {
             config: config.into(),
             state: AppState::default()
         };
+        unsafe{
+            LifeTimeApp = Box::into_raw(Box::new(app));
+            return &*LifeTimeApp;
+        }
+       
     }
 
     ///Called when on
     ///macos/ios: applicationDidFinishLaunching event was fired
     ///windows: 
     pub fn on_launch(&self,then:fn(&App))->&Self{
-        then(self);
+        // then(self);
+        unsafe{
+            EventQueue.push(("onLaunch".to_string(),then));
+        }
         self
     }
+
+    
 
     pub fn run(&self){
         //macos
@@ -37,9 +65,14 @@ impl App {
             use cocoa::appkit::{NSApp,NSApplication,NSApplicationActivationPolicyRegular,NSMenu,NSMenuItem,NSWindow,NSWindowStyleMask,NSBackingStoreBuffered};
             use cocoa::base::{YES,NO,nil};
             use cocoa::foundation::{NSString,NSRect,NSPoint,NSSize,NSAutoreleasePool};
-
+            use cocoa::delegate;
+            // use cocoa::base::{SEL,Class};
+            use objc::{sel,msg_send,sel_impl,class};
             //register the application delegate
             let nsapp = NSApp();
+            nsapp.setDelegate_(delegate!("GAPPApplicationDelegate",{
+                (applicationWillFinishLaunching:) => macos_app_did_finish_launching as extern fn(&Object, Sel, id)
+            }));
             let menubar = NSMenu::new(nil);
             let app_menu = NSMenu::new(nil);
             let app_menu_item = NSMenuItem::new(nil);
@@ -54,6 +87,11 @@ impl App {
             //yust a test
             // NSApplication::setMainMenu_(nsapp, menu);
             NSApplication::activateIgnoringOtherApps_(nsapp, YES);
+
+            //transfer
+            // unsafe{
+            //     LifeTimeApp = std::ptr::addr_of_mut!(*self);
+            // }
             NSApplication::run(nsapp);
         }
         #[cfg(target_os="windows")]
