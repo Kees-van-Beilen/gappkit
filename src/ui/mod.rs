@@ -1,5 +1,7 @@
 mod textview;
+mod imageview;
 pub use textview::TextView;
+pub use imageview::{ImageView,Image};
 pub enum InstanceSize<T> {
     ///no value assigned
     None,

@@ -57,7 +57,6 @@ impl Window{
                 if child.is_lazy() {
                     let x:id = msg_send![class!(NSLayoutConstraint), constraintWithItem: t attribute:(NSLayoutAttribute::CenterX as i64) relatedBy:(NSLayoutRelation::Equal as i64) toItem: master attribute: (NSLayoutAttribute::CenterX as i64) multiplier:1.0 constant:0.0];
                     let y:id = msg_send![class!(NSLayoutConstraint), constraintWithItem: t attribute:(NSLayoutAttribute::CenterY as i64) relatedBy:(NSLayoutRelation::Equal as i64) toItem: master attribute: (NSLayoutAttribute::CenterY as i64) multiplier:1.0 constant:0.0];
-                    let rect = NSView::frame(master);
                     //makes the window not panic;
                     let _:() = msg_send![t, setTranslatesAutoresizingMaskIntoConstraints:NO];
                     //makes the window not panic;
@@ -66,6 +65,16 @@ impl Window{
 
                 } else {
                     //maximise the child
+                    let lead:id = msg_send![class!(NSLayoutConstraint), constraintWithItem: t attribute:(NSLayoutAttribute::Width as i64) relatedBy:(NSLayoutRelation::Equal as i64) toItem: master attribute: (NSLayoutAttribute::Width as i64) multiplier:1.0 constant:0.0];
+                    let trail:id = msg_send![class!(NSLayoutConstraint), constraintWithItem: t attribute:(NSLayoutAttribute::Height as i64) relatedBy:(NSLayoutRelation::Equal as i64) toItem: master attribute: (NSLayoutAttribute::Height as i64) multiplier:1.0 constant:0.0];
+                    //makes the window not panic;
+                    let _:() = msg_send![t, setTranslatesAutoresizingMaskIntoConstraints:NO];
+                    //makes the window not panic;
+                    let _:() = msg_send![master, setTranslatesAutoresizingMaskIntoConstraints:YES];
+
+                    let _:() = msg_send![t, setContentCompressionResistancePriority: 480.0 as f32 forOrientation:0];
+                    let _:() = msg_send![t, setContentCompressionResistancePriority: 490.0 as f32 forOrientation:1];
+                    NSLayoutConstraint::activateConstraints(nil, NSArray::arrayWithObjects(nil, &[lead,trail]));
                 }
 
             }

@@ -11,10 +11,12 @@ fn launch(app:&App){
     // Window::new(())
     // println!("{}",app.config.name);
 
-    Window::new(()).ui(
+    Window::new(WindowDescriptor{
+        title:"title".to_string()
+    }).ui(
         View{
             children:vec![
-                Box::new(TextView::new("Hello world".to_string()))
+                Box::new(ImageView::new("/Users/kbeilen/Desktop/homework/coding/cargoProjects/gappkit/resources/paris.jpeg"))
             ],
             ..Default::default()
         }
