@@ -62,6 +62,9 @@ impl ContentView for ImageView{
             let view:id = msg_send![class!(NSImageView), imageViewWithImage: image];
             let _:() = msg_send![view, setFrameSize:NSSize::new(100.0, 100.0)];
             let _:() = msg_send![view, setImageScaling: 1];
+
+            let _:() = msg_send![view, setContentCompressionResistancePriority: 490.0 as f32 forOrientation:0];
+            let _:() = msg_send![view, setContentCompressionResistancePriority: 490.0 as f32 forOrientation:1];
             return view;
 
         }

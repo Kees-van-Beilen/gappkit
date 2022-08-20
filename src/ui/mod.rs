@@ -1,7 +1,9 @@
 mod textview;
 mod imageview;
+mod hstack;
 pub use textview::TextView;
 pub use imageview::{ImageView,Image};
+pub use hstack::HStackView;
 pub enum InstanceSize<T> {
     ///no value assigned
     None,
