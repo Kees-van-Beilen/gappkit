@@ -1,5 +1,5 @@
 // extern crate gappkit;
-use gappkit::prelude::*;
+use gappkit::{prelude::*, ui::ButtonView};
 
 fn main(){
     App::new("hello world")
@@ -7,19 +7,24 @@ fn main(){
         .run()
 }
 
-// fn click(btn:&ButtonView){
-//     println!("clicked")
-// }
+
+static mut counter:i32 = 1;
+fn click(btn:&mut ButtonView){
+    println!("clicked");
+    unsafe {
+        counter+=1;
+        println!("Hello world: {}",counter);
+        btn.set_title(format!("Hello world: {}",counter).as_str());
+    }
+}
 fn launch(app:&mut App){
 
-    Window::new("test window")
+    let window = Window::new("test window")
         .ui(View!{
-            VStack!{
-                Image!(format!("{}/resources/paris.jpeg",std::env::current_dir().unwrap().to_str().unwrap_or("./")).as_str())
-                    .scale_aspect()
-                Text!("This is a public domain image".to_string())
-            }
+            Button!("Hello world: 1".to_string())
+                .on_click(click)
         });
+    app.windows.push(window);
     // let mut wind = Window::new(WindowDescriptor{
     //     title:"title".to_string()
     // });

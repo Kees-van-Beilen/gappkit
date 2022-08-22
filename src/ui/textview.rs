@@ -24,11 +24,14 @@ impl ContentView for TextView{
     }
 
     fn get_children(&self)->Option<&Vec<Box<dyn ContentView>>> {
-        //has no children
         None
     }
+    fn get_children_mut(&mut self)->Option<&mut Vec<Box<dyn ContentView>>> {
+        None
+    }
+    
     #[cfg(target_os="macos")]
-    fn build(&self,parent:Box<&dyn ContentView>,sibling_count:i32)->cocoa::base::id {
+    fn build(&mut self,sibling_count:i32)->cocoa::base::id {
         use cocoa::foundation::{NSString};
         use cocoa::base::{nil,id};
         use objc::*;

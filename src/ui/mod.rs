@@ -21,8 +21,9 @@ pub trait ContentView{
      fn get_min_size(&self)->InstanceSize<Size<i32>>;
      fn get_max_size(&self)->InstanceSize<Size<i32>>;
      fn get_children(&self)->Option<&Vec<Box<dyn ContentView>>>;
+     fn get_children_mut(&mut self)->Option<&mut Vec<Box<dyn ContentView>>>;
      #[cfg(target_os="macos")]
-     fn build(&self,parent:Box<&dyn ContentView>,sibling_count:i32)->cocoa::base::id;
+     fn build(&mut self,sibling_count:i32)->cocoa::base::id;
 }
 
 pub struct Size<T>{
@@ -81,8 +82,11 @@ impl ContentView for View{
     fn get_children(&self)->Option<&Vec<Box<dyn ContentView>>> {
         Some(&self.children)
     }
+    fn get_children_mut(&mut self)->Option<&mut Vec<Box<dyn ContentView>>> {
+        Some(&mut self.children)
+    }
 
-    fn build(&self,parent:Box<&dyn ContentView>,sibling_count:i32)->cocoa::base::id {
+    fn build(&mut self,sibling_count:i32)->cocoa::base::id {
         panic!("cannot build view")
     }
 }

@@ -39,7 +39,7 @@ impl Window{
     }
 
     //set window ui
-    pub fn ui(&mut self,t_view:View){
+    pub fn ui(mut self,mut t_view:View)->Self{
         use cocoa::appkit::{NSWindow,NSView,NSLayoutConstraint};
         use cocoa::base::{id,nil,NO,YES};
         use cocoa::foundation::NSArray;
@@ -47,14 +47,14 @@ impl Window{
         use macos::*;
 
         self.ui = Some(t_view);
-        let view = self.ui.as_ref().unwrap();
+        let  view: &mut View = self.ui.as_mut().unwrap();
 
-        let children = view.get_children().unwrap();
+        let children = view.get_children_mut().unwrap();
         let sibling_count:i32 = children.len() as i32;
         
         if sibling_count > 1 {panic!("A root view can only contain 1 child")}
-        for child in children.iter() {
-            let t:id = child.build(Box::new(view), sibling_count);
+        for child in children.iter_mut() {
+            let t:id = child.build(sibling_count);
             unsafe{
                 let master:id = NSWindow::contentView(self.macos_window_handle);
                 NSView::addSubview_(master, t);
@@ -86,9 +86,7 @@ impl Window{
 
         }
         //actually transfer the window
-        unsafe {
-            // (*LifeTimeApp).windows.push(*self);
-        }
+        self
     }
 
 }

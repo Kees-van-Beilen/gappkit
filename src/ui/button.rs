@@ -1,20 +1,20 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use cocoa::base::id;
+use cocoa::{base::id, foundation::NSString};
 
 use crate::ui::{ContentView,InstanceSize,Size};
 
 
 pub struct ButtonView{
     pub title:String,
-    pub callback:Option<fn(&ButtonView)>,
+    pub callback:Option<fn(&mut ButtonView)>,
     pub id:i32,
     pub macos_handle:Option<id>
 }
 
 impl Drop for ButtonView {
     fn drop(&mut self) {
-        println!("Dropping Buttonview!");
+        println!("A dynamic ui component has been dropped whilst it should not, please make sure the window remains relavant");
     }
 }
 
@@ -27,11 +27,23 @@ impl ButtonView{
             macos_handle:None
         }
     }
-    pub fn set_id(&mut self, to:i32)->&Self{
-        self.id = to;
-        return self;
+    pub fn set_title(&mut self, to:&str){
+        self.title = to.to_string();
+        //macos update
+        unsafe{
+            use objc::*;
+            if self.macos_handle.is_none() {
+                println!("not updating view");
+                return;
+            }
+            let _:() = msg_send![self.macos_handle.unwrap(), setTitle:(cocoa::foundation::NSString::alloc(cocoa::base::nil).init_str(to))];
+        }
     }
-    pub fn on_click(&mut self,then:fn(&ButtonView))->&Self{
+    pub fn set_id(mut self:Box<Self>, to:i32)->Box<Self>{
+        self.id = to;
+        self
+    }
+    pub fn on_click(mut self:Box<Self>,then:fn(&mut ButtonView))->Box<Self>{
         self.callback = Some(then);
         self
     }
@@ -51,11 +63,13 @@ impl ContentView for ButtonView{
     }
 
     fn get_children(&self)->Option<&Vec<Box<dyn ContentView>>> {
-        //has no children
+        None
+    }
+    fn get_children_mut(&mut self)->Option<&mut Vec<Box<dyn ContentView>>> {
         None
     }
     #[cfg(target_os="macos")]
-    fn build(&self,parent:Box<&dyn ContentView>,sibling_count:i32)->cocoa::base::id {
+    fn build(&mut self,sibling_count:i32)->cocoa::base::id {
         use std::os::raw::c_void;
 
         use cocoa::appkit::NSImage;
@@ -89,6 +103,7 @@ impl ContentView for ButtonView{
                 //     evt.as_mut().unwrap().insert(button, self.callback.unwrap());
                 // }
             }
+            self.macos_handle = Some(button);
             return button;
 
         }

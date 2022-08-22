@@ -58,6 +58,15 @@ macro_rules! Image {
         }
     };
 }
+#[macro_export]
+macro_rules! Button {
+    ( $x:expr) => {
+        {
+            let mut button_view = gappkit::ui::ButtonView::new($x);
+            Box::new(button_view)
+        }
+    };
+}
 
 #[macro_export]
 macro_rules! _ScaleAspect {

@@ -47,10 +47,10 @@ extern fn macos_click_event(this: &Object, _cmd: Sel, _notification: id) {
         // let cls_name = cls_name_c.to_str().unwrap_or_default();
 
         let obj: &*const c_void = Object::get_ivar(&*_notification, "_button_view_struct");
-        let o  = ((*obj) as *const ButtonView);
-        println!("a button was clicked titled: {}",(*o).title);
+        let o  = (*obj) as *mut ButtonView;
+        // println!("a button was clicked titled: {}",(*o).title);
         if (*o).callback.is_some() {
-            (*o).callback.unwrap()(&*o);
+            (*o).callback.unwrap()(&mut *o);
         }
     }
 }

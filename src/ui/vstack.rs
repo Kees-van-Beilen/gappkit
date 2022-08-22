@@ -26,8 +26,11 @@ impl ContentView for VStackView{
     fn get_children(&self)->Option<&Vec<Box<dyn ContentView>>> {
         Some(&self.children)
     }
+    fn get_children_mut(&mut self)->Option<&mut Vec<Box<dyn ContentView>>> {
+        Some(&mut self.children)
+    }
     #[cfg(target_os="macos")]
-    fn build(&self,parent:Box<&dyn ContentView>,sibling_count:i32)->cocoa::base::id {
+    fn build(&mut self,sibling_count:i32)->cocoa::base::id {
         use cocoa::foundation::{NSString,NSArray};
         use cocoa::base::{nil,id};
         use objc::*;
@@ -43,8 +46,8 @@ impl ContentView for VStackView{
             //         are_all_not_lazy = false;
             //     }
             // }
-            for child in self.children.iter() {
-                let child_view = child.build(Box::new(self), child_count as i32);
+            for child in self.children.iter_mut() {
+                let child_view = child.build( child_count as i32);
                 // if child.is_lazy() {
 
                 // }else{
