@@ -1,7 +1,8 @@
 use crate::ui::{ContentView,InstanceSize,Size};
 pub struct HStackView{
-    children:Vec<Box<dyn ContentView>>
+    pub children:Vec<Box<dyn ContentView>>
 }
+
 impl HStackView{
     pub fn new(children:Vec<Box<dyn ContentView>>)->Self{
         Self {
