@@ -10,22 +10,47 @@ impl Default for AppState{
 }
 pub struct App{
     pub config:AppConfig,
-    pub state:AppState
+    pub state:AppState,
+    pub windows:Vec<crate::window::Window>
 }
 
-static mut EventQueue:Vec<(String,fn(&App))> = vec![];
-static mut LifeTimeApp:*mut App = std::ptr::null_mut();
+static mut EventQueue:Vec<(String,fn(&mut App))> = vec![];
+pub static mut LifeTimeApp:*mut App = std::ptr::null_mut();
 
+use std::ffi::CString;
+// use core::ffi::CStr;
+use std::os::raw::c_void;
+
+use objc::class;
 use objc::runtime::Object;
 use objc::runtime::Sel;
 use cocoa::base::id;
+use objc::runtime::ivar_getTypeEncoding;
+
+use crate::ui::ButtonView;
 
 extern fn macos_app_did_finish_launching(this: &Object, _cmd: Sel, _notification: id) {
     unsafe{
         for (event,then) in EventQueue.iter() {
             if event == "onLaunch" {
-                then(&*LifeTimeApp);
+                then(&mut *LifeTimeApp);
             }
+        }
+    }
+}
+extern fn macos_click_event(this: &Object, _cmd: Sel, _notification: id) {
+    
+    unsafe{
+        // _notification
+        // let cls = objc::runtime::object_getClass(_n/otification);
+        // let cls_name_c = CString::from_raw(objc::runtime::class_getName(cls) as *mut i8);
+        // let cls_name = cls_name_c.to_str().unwrap_or_default();
+
+        let obj: &*const c_void = Object::get_ivar(&*_notification, "_button_view_struct");
+        let o  = ((*obj) as *const ButtonView);
+        println!("a button was clicked titled: {}",(*o).title);
+        if (*o).callback.is_some() {
+            (*o).callback.unwrap()(&*o);
         }
     }
 }
@@ -35,9 +60,17 @@ impl App {
     pub fn new<ConfigType>(config:ConfigType)->&'static App where ConfigType: Into<AppConfig>{
         let app =  App {
             config: config.into(),
-            state: AppState::default()
+            state: AppState::default(),
+            windows: vec![]
         };
         unsafe{
+            //create GAPPButton class
+            use objc::declare::ClassDecl;
+            use objc::class;
+
+            let mut decl = ClassDecl::new("GAPPButton", class!(NSButton)).unwrap();
+            decl.add_ivar::<*const c_void>("_button_view_struct");
+            decl.register();
             LifeTimeApp = Box::into_raw(Box::new(app));
             return &*LifeTimeApp;
         }
@@ -47,7 +80,7 @@ impl App {
     ///Called when on
     ///macos/ios: applicationDidFinishLaunching event was fired
     ///windows: 
-    pub fn on_launch(&self,then:fn(&App))->&Self{
+    pub fn on_launch(&self,then:fn(&mut App))->&Self{
         // then(self);
         unsafe{
             EventQueue.push(("onLaunch".to_string(),then));
@@ -71,7 +104,8 @@ impl App {
             //register the application delegate
             let nsapp = NSApp();
             nsapp.setDelegate_(delegate!("GAPPApplicationDelegate",{
-                (applicationWillFinishLaunching:) => macos_app_did_finish_launching as extern fn(&Object, Sel, id)
+                (applicationWillFinishLaunching:) => macos_app_did_finish_launching as extern fn(&Object, Sel, id),
+                (click_event:) => macos_click_event as extern fn(&Object, Sel, id)
             }));
             let menubar = NSMenu::new(nil);
             let app_menu = NSMenu::new(nil);
