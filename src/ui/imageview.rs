@@ -21,15 +21,23 @@ impl Image {
     }
 }
 pub struct ImageView{
-    image: Image
+    image: Image,
+    scale_aspect:bool
 }
 impl ImageView{
     pub fn new(contents_of_file:&str)->Self{
         Self {
-            image:Image::from_file(contents_of_file)
+            image:Image::from_file(contents_of_file),
+            scale_aspect:false
         }
     }
+    pub fn scale_aspect(mut self:Box<Self>)->Box<Self>{
+        self.scale_aspect = true;
+        self
+    }
+    
 }
+
 impl ContentView for ImageView{
     fn is_lazy(&self)->bool {
         false
@@ -48,6 +56,7 @@ impl ContentView for ImageView{
         //has no children
         None
     }
+
     #[cfg(target_os="macos")]
     fn build(&self,parent:Box<&dyn ContentView>,sibling_count:i32)->cocoa::base::id {
         use cocoa::foundation::{NSString,NSSize};
@@ -61,7 +70,7 @@ impl ContentView for ImageView{
 
             let view:id = msg_send![class!(NSImageView), imageViewWithImage: image];
             let _:() = msg_send![view, setFrameSize:NSSize::new(100.0, 100.0)];
-            let _:() = msg_send![view, setImageScaling: 1];
+            let _:() = msg_send![view, setImageScaling: if self.scale_aspect {3}else{1}];
 
             let _:() = msg_send![view, setContentCompressionResistancePriority: 490.0 as f32 forOrientation:0];
             let _:() = msg_send![view, setContentCompressionResistancePriority: 490.0 as f32 forOrientation:1];
